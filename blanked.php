@@ -38,7 +38,7 @@ if ( ! defined( 'WPINC' ) ) {
  * @return array
  */
 function blanked_theme_page_templates( $templates ) {
-	if ( is_array( $templates ) ) {
+	if ( ! is_array( $templates ) ) {
 		$templates = array();
 	}
 
