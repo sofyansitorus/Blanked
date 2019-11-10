@@ -9,11 +9,11 @@ Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add totally blank page template for any themes used. No header, no sidebar, no footer.
+Add totally blank page template for any themes. No header, no sidebar, no footer.
 
 == Description ==
 
-This plugin will add totally blank page template for any themes used. No header, no sidebar, no footer.
+This plugin will add totally blank page template for any themes. No header, no sidebar, no footer.
 
 Any page using the template will only display the content, but will load everything included in the wp_head(), wp_body_open and wp_footer(), so all scripts and styles should load as normal.
 
