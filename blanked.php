@@ -30,6 +30,11 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+// Define constant for the template file name.
+if ( ! defined( 'BLANKED_TEMPLATE_FILE' ) ) {
+	define( 'BLANKED_TEMPLATE_FILE', 'blanked-template.php' );
+}
+
 /**
  * Filters list of page templates for a theme.
  *
