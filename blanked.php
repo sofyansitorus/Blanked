@@ -36,6 +36,16 @@ if ( ! defined( 'BLANKED_TEMPLATE_FILE' ) ) {
 }
 
 /**
+ * Get the full path of the template file location.
+ *
+ * @since 1.0.0
+ * @return string
+ */
+function blanked_get_template_file() {
+	return plugin_dir_path( __FILE__ ) . BLANKED_TEMPLATE_FILE;
+}
+
+/**
  * Filters list of page templates for a theme.
  *
  * @since 1.0.0
@@ -48,9 +58,8 @@ function blanked_theme_page_templates( $templates ) {
 	}
 
 	return array_merge( $templates, array(
-			'blanked-template.php' => __( 'Blanked Page', 'blanked' ),
-		)
-	);
+		BLANKED_TEMPLATE_FILE => __( 'Blanked Page', 'blanked' ),
+	) );
 }
 
 /**
@@ -68,9 +77,11 @@ function blanked_template_include( $template ) {
 		return $template;
 	}
 
+	$blanked_template_file = blanked_get_template_file();
+
 	// Validate if current template file meta is match and file exists.
-	if ( 'blanked-template.php' === get_post_meta( $post->ID, '_wp_page_template', true ) && file_exists( dirname( __FILE__ ) . '/blanked-template.php' ) ) {
-		return dirname( __FILE__ ) . '/blanked-template.php';
+	if ( BLANKED_TEMPLATE_FILE === get_post_meta( $post->ID, '_wp_page_template', true ) && file_exists( $blanked_template_file ) ) {
+		return $blanked_template_file;
 	}
 
 	return $template;
@@ -83,7 +94,7 @@ function blanked_template_include( $template ) {
  * @return void
  */
 function blanked_wp_head() {
-	// Bail early if current theme support title-tag.
+	// Bail early if current theme is supporting title-tag.
 	if ( get_theme_support( 'title-tag' ) ) {
 		return;
 	}
