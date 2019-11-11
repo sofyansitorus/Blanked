@@ -1,11 +1,11 @@
 {
-  "name": "woongkir",
-  "title": "Woongkir",
-  "version": "1.2.12",
+  "name": "blanked",
+  "title": "Blanked",
+  "version": "1.1.0",
   "homepage": "https://github.com/sofyansitorus/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sofyansitorus/Woongkir.git"
+    "url": "https://github.com/sofyansitorus/Blanked.git"
   },
   "author": "Sofyan Sitorus",
   "devDependencies": {

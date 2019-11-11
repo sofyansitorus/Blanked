@@ -24,8 +24,8 @@ const replace = require('gulp-replace');
 /**
  * Local variables
  */
-const prefix = 'blanked';
-const project = 'Blanked';
+const prefix = packageJSON.name;
+const project = packageJSON.title;
 
 const assets = [
     {
@@ -335,7 +335,7 @@ gulp.task('bump', function () {
             replaceWith: ' {versionBump}\n',
         },
         {
-            src: ['./' + blanked + '.php'],
+            src: ['./' + prefix + '.php'],
             dest: './',
             search: '{versionCurrent}',
             replaceWith: '{versionBump}',
