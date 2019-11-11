@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The plugin bootstrap file
  *
@@ -16,7 +15,7 @@
  * Plugin Name:       Blanked
  * Plugin URI:        https://github.com/sofyansitorus/Blanked
  * Description:       Add blank page template for all themes.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Sofyan Sitorus
  * Author URI:        https://github.com/sofyansitorus
  * License:           GPL-2.0+
@@ -35,6 +34,9 @@ if ( ! defined( 'BLANKED_TEMPLATE_FILE' ) ) {
 	define( 'BLANKED_TEMPLATE_FILE', 'blanked-template.php' );
 }
 
+// Load the setting page library.
+require_once 'includes/class-wpyes.php';
+
 /**
  * Get the full path of the template file location.
  *
@@ -43,6 +45,51 @@ if ( ! defined( 'BLANKED_TEMPLATE_FILE' ) ) {
  */
 function blanked_get_template_file() {
 	return plugin_dir_path( __FILE__ ) . BLANKED_TEMPLATE_FILE;
+}
+
+/**
+ * Get list of special pages conditional check
+ *
+ * @since 1.0.0
+ * @return array
+ */
+function blanked_conditional_check_list() {
+	return array(
+		'is_home'    => __( 'Blog', 'blanked' ),
+		'is_archive' => __( 'Archive', 'blanked' ),
+		'is_search'  => __( 'Search', 'blanked' ),
+	);
+}
+
+/**
+ * Check is current page need to apply the blanked template.
+ *
+ * @since 1.0.0
+ * @return bool
+ */
+function blanked_is_apply_template() {
+	global $post;
+
+	if ( ! file_exists( blanked_get_template_file() ) ) {
+		return false;
+	}
+
+	if ( is_page() ) {
+		return is_page_template( BLANKED_TEMPLATE_FILE );
+	} elseif ( is_singular() ) {
+		return get_option( 'blanked_enable_post_type__' . get_post_type( $post ) );
+	} else {
+		$blanked_is_apply = false;
+
+		foreach ( array_keys( blanked_conditional_check_list() ) as $conditional ) {
+			if ( function_exists( $conditional ) && call_user_func( $conditional ) && get_option( 'blanked_enable_special_page__' . $conditional ) ) {
+				$blanked_is_apply = true;
+				break;
+			}
+		}
+
+		return $blanked_is_apply;
+	}
 }
 
 /**
@@ -57,9 +104,12 @@ function blanked_theme_page_templates( $templates ) {
 		$templates = array();
 	}
 
-	return array_merge( $templates, array(
-		BLANKED_TEMPLATE_FILE => __( 'Blanked Page', 'blanked' ),
-	) );
+	return array_merge(
+		$templates,
+		array(
+			BLANKED_TEMPLATE_FILE => __( 'Blanked Page', 'blanked' ),
+		)
+	);
 }
 
 /**
@@ -70,18 +120,8 @@ function blanked_theme_page_templates( $templates ) {
  * @return string
  */
 function blanked_template_include( $template ) {
-	global $post;
-
-	// Bail early if post object is empty or not in page.
-	if ( ! $post || ! is_page() ) {
-		return $template;
-	}
-
-	$blanked_template_file = blanked_get_template_file();
-
-	// Validate if current template file meta is match and file exists.
-	if ( BLANKED_TEMPLATE_FILE === get_post_meta( $post->ID, '_wp_page_template', true ) && file_exists( $blanked_template_file ) ) {
-		return $blanked_template_file;
+	if ( blanked_is_apply_template() ) {
+		return blanked_get_template_file();
 	}
 
 	return $template;
@@ -93,16 +133,15 @@ function blanked_template_include( $template ) {
  * @since 1.0.0
  * @return void
  */
-function blanked_wp_head() {
-	// Bail early if current theme is supporting title-tag.
+function blanked_render_page_title() {
 	if ( get_theme_support( 'title-tag' ) ) {
-		return;
+		_wp_render_title_tag();
+	} else {
+		// Print the page title for backward compatibility.
+		?>
+		<title><?php wp_title(); ?></title>
+		<?php
 	}
-
-	// Print the page title.
-	?>
-	<title><?php wp_title( '|', true, 'right' ); ?></title>
-	<?php
 }
 
 /**
@@ -119,25 +158,235 @@ function blanked_admin_notices() {
 }
 
 /**
+ * The admin settings callback.
+ *
+ * @return void
+ */
+function blanked_admin_setting() {
+	$settings = new Wpyes(
+		'blanked_setting',
+		array(
+			'menu_title' => __( 'Blanked', 'blanked' ),
+			'page_title' => __( 'Blanked Settings', 'blanked' ),
+			'method'     => 'add_options_page',
+		),
+		'blanked'
+	);
+
+	$settings->add_section(
+		array(
+			'id'    => 'disable_functions',
+			'title' => __( 'Disable functions for any singular and special pages that applied to use blanked template', 'blanked' ),
+		)
+	);
+
+	$settings->add_fields(
+		array(
+			array(
+				'type'  => 'checkbox',
+				'id'    => 'disable_wp_head',
+				'label' => __( 'Disable wp_head()', 'blanked' ),
+			),
+			array(
+				'type'  => 'checkbox',
+				'id'    => 'disable_wp_body_open',
+				'label' => __( 'Disable wp_body_open()', 'blanked' ),
+			),
+			array(
+				'type'  => 'checkbox',
+				'id'    => 'disable_wp_footer',
+				'label' => __( 'Disable wp_footer()', 'blanked' ),
+			),
+		)
+	);
+
+	$settings->add_section(
+		array(
+			'id'    => 'remove_css_class',
+			'title' => __( 'Remove CSS class for any singular and special pages that applied to use blanked template', 'blanked' ),
+		)
+	);
+
+	$settings->add_fields(
+		array(
+			array(
+				'type'        => 'text',
+				'id'          => 'remove_body_class',
+				'label'       => __( 'Remove Body CSS Class', 'blanked' ),
+				'description' => __( 'Separate with space for multiple classes.', 'blanked' ),
+			),
+			array(
+				'type'        => 'text',
+				'id'          => 'remove_post_class',
+				'label'       => __( 'Remove Post CSS Class', 'blanked' ),
+				'description' => __( 'Separate with space for multiple classes.', 'blanked' ),
+			),
+		)
+	);
+
+	$settings->add_section(
+		array(
+			'id'    => 'add_css_class',
+			'title' => __( 'Add CSS class for any singular and special pages that applied to use blanked template', 'blanked' ),
+		)
+	);
+
+	$settings->add_fields(
+		array(
+			array(
+				'type'        => 'text',
+				'id'          => 'add_body_class',
+				'label'       => __( 'Add Body CSS Class', 'blanked' ),
+				'description' => __( 'Separate with space for multiple classes.', 'blanked' ),
+			),
+			array(
+				'type'        => 'text',
+				'id'          => 'add_post_class',
+				'label'       => __( 'Add Post CSS Class', 'blanked' ),
+				'description' => __( 'Separate with space for multiple classes.', 'blanked' ),
+			),
+		)
+	);
+
+	$settings->add_section(
+		array(
+			'id'    => 'post_types',
+			'title' => __( 'Apply blanked template to post type singular pages', 'blanked' ),
+		)
+	);
+
+	$post_types = get_post_types(
+		array(
+			'public' => true,
+		),
+		'objects'
+	);
+
+	foreach ( $post_types as $post_type_slug => $post_type_object ) {
+		if ( 'page' === $post_type_slug ) {
+			continue;
+		}
+
+		$settings->add_field(
+			array(
+				'type'  => 'checkbox',
+				'id'    => 'enable_post_type__' . $post_type_slug,
+				'label' => $post_type_object->label,
+			)
+		);
+	}
+
+	$settings->add_section(
+		array(
+			'id'    => 'special_pages',
+			'title' => __( 'Apply blanked template to special pages', 'blanked' ),
+		)
+	);
+
+	foreach ( blanked_conditional_check_list() as $key => $label ) {
+		$settings->add_field(
+			array(
+				'type'  => 'checkbox',
+				'id'    => 'enable_special_page__' . $key,
+				'label' => $label,
+			)
+		);
+	}
+
+	$settings->init(); // Run the Wpyes class.
+}
+
+/**
+ * Filters body tag element classes when page using the blanked template.
+ *
+ * @since 1.0.0
+ * @param array $classes Raw body classes data passed to the filter.
+ * @return array
+ */
+function blanked_filter_body_class( $classes ) {
+	$blanked_is_apply_template = blanked_is_apply_template();
+
+	if ( ! $blanked_is_apply_template ) {
+		return $classes;
+	}
+
+	// Remove CSS class.
+	$blanked_remove_body_class = get_option( 'blanked_remove_body_class', '' );
+
+	if ( $blanked_remove_body_class && blanked_is_apply_template() ) {
+		$classes = array_diff( $classes, explode( ' ', $blanked_remove_body_class ) );
+	}
+
+	// Add CSS class.
+	$blanked_add_body_class = get_option( 'blanked_add_body_class', '' );
+
+	if ( $blanked_add_body_class && blanked_is_apply_template() ) {
+		$classes = array_unique( array_merge( $classes, explode( ' ', $blanked_add_body_class ) ) );
+	}
+
+	return $classes;
+}
+
+/**
+ * Filters post content wrapper CSS classes when page using the blanked template.
+ *
+ * @since 1.0.0
+ * @param array $classes Raw post classes data passed to the filter.
+ * @return array
+ */
+function blanked_filter_post_class( $classes ) {
+	$blanked_is_apply_template = blanked_is_apply_template();
+
+	if ( ! $blanked_is_apply_template ) {
+		return $classes;
+	}
+
+	// Remove CSS class.
+	$blanked_remove_post_class = get_option( 'blanked_remove_post_class', '' );
+
+	if ( $blanked_remove_post_class && blanked_is_apply_template() ) {
+		$classes = array_diff( $classes, explode( ' ', $blanked_remove_post_class ) );
+	}
+
+	// Add CSS class.
+	$blanked_add_post_class = get_option( 'blanked_add_post_class', '' );
+
+	if ( $blanked_add_post_class && blanked_is_apply_template() ) {
+		$classes = array_unique( array_merge( $classes, explode( ' ', $blanked_add_post_class ) ) );
+	}
+
+	return $classes;
+}
+
+/**
  * Plugin bootstrap function
  *
  * @since  1.0.0
  * @return void
  */
 function blanked_bootstrap() {
+	// Load plugin textdomain.
+	load_plugin_textdomain( 'blanked', false, basename( plugin_dir_path( __FILE__ ) ) . '/languages' );
+
 	// Check version compatibility. Bail early if minimum version requirements not met.
 	if ( version_compare( floatval( get_bloginfo( 'version' ) ), '4.7', '<' ) ) {
 		add_action( 'admin_notices', 'blanked_admin_notices' );
 		return;
 	}
 
+	// Initialize the admin settings page.
+	add_action( 'init', 'blanked_admin_setting' );
+
 	// Hooked into theme_page_templates to modify list of page templates for a theme.
-	add_filter( 'theme_page_templates', 'blanked_theme_page_templates' );
+	add_filter( 'theme_page_templates', 'blanked_theme_page_templates', 999 );
 
 	// Hooked into template_include to modify the path of the current template before including it.
-	add_filter( 'template_include', 'blanked_template_include' );
+	add_filter( 'template_include', 'blanked_template_include', 999 );
 
-	// Hooked into wp_head to print page title tag into head element.
-	add_action( 'wp_head', 'blanked_wp_head' );
+	// Hooked into body_class to modify the CSS classes.
+	add_filter( 'body_class', 'blanked_filter_body_class', 999 );
+
+	// Hooked into post_class to modify the CSS classes.
+	add_filter( 'post_class', 'blanked_filter_post_class', 999 );
 }
 add_action( 'plugins_loaded', 'blanked_bootstrap' );

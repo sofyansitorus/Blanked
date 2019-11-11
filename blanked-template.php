@@ -13,20 +13,47 @@
 		<meta charset="<?php bloginfo( 'charset' ); ?>" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="profile" href="https://gmpg.org/xfn/11" />
-		<?php wp_head(); ?>
+		<?php
+		if ( ! get_option( 'blanked_disable_wp_head' ) ) :
+			wp_head();
+		else :
+			blanked_render_page_title();
+		endif;
+		?>
 	</head>
 	<body <?php body_class(); ?>>
 		<?php
-		if ( function_exists( 'wp_body_open') ):
+		if ( function_exists( 'wp_body_open' ) && ! get_option( 'blanked_disable_wp_body_open' ) ) :
 			wp_body_open();
 		endif;
 
 		while ( have_posts() ) :
 			the_post();
-			the_content();
+			?>
+			<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+			<?php
+			the_content(
+				sprintf(
+					wp_kses(
+						/* translators: %s: Name of current post. Only visible to screen readers */
+						__( 'Continue reading<span class="screen-reader-text"> "%s"</span>', 'blanked' ),
+						array(
+							'span' => array(
+								'class' => array(),
+							),
+						)
+					),
+					get_the_title()
+				)
+			);
+			?>
+			</article>
+			<?php
 		endwhile;
 
-		wp_footer();
+		if ( ! get_option( 'blanked_disable_wp_head' ) ) :
+			wp_footer();
+		endif;
 		?>
 	</body>
 </html>

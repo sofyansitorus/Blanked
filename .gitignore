@@ -1,1 +1,9 @@
 .DS_Store
+*.pot
+*.po
+*.mo
+
+vendor/
+node_modules/
+tests/
+dist/
