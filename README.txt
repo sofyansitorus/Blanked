@@ -9,11 +9,11 @@ Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add totally blank page template for any themes, to any to pages, singular posts and any special pages such as blog page, archive page, search page. No header, no sidebar, no footer.
+Add a blank page template for any themes. No header, no sidebar, no footer. The blank page template can be applied to pages, singular posts and any special pages such as blog page, archive page, search page.
 
 == Description ==
 
-This plugin will add totally blank page template for any themes. Any page using the template will only display the content. No header, no sidebar, no footer.
+This plugin will add a blank page template for any themes. Any page using the template will only display the content. No header, no sidebar, no footer.
 
 The blank page template can be applied to pages, singular posts and any special pages such as blog page, archive page, search page. It load everything included in the wp_head(), wp_body_open() and wp_footer(), so all scripts and styles should load as normal. It also has option to customize the CSS class for the body tag element (body_class()) and post content wrapper element (post_class()).
 
