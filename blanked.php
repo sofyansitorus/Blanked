@@ -12,7 +12,7 @@
  * @package           Blanked
  *
  * @wordpress-plugin
- * Plugin Name:       Blanked
+ * Plugin Name:       Blanked Template
  * Plugin URI:        https://github.com/sofyansitorus/Blanked
  * Description:       Add blank page template for all themes.
  * Version:           1.1.0
@@ -48,12 +48,12 @@ function blanked_get_template_file() {
 }
 
 /**
- * Get list of special pages
+ * Get list of special pages conditional check
  *
  * @since 1.0.0
  * @return array
  */
-function blanked_special_pages_list() {
+function blanked_conditional_check_list() {
 	return array(
 		'is_home'    => __( 'Blog', 'blanked' ),
 		'is_archive' => __( 'Archive', 'blanked' ),
@@ -81,7 +81,7 @@ function blanked_is_apply_template() {
 	} else {
 		$blanked_is_apply = false;
 
-		foreach ( array_keys( blanked_special_pages_list() ) as $conditional ) {
+		foreach ( array_keys( blanked_conditional_check_list() ) as $conditional ) {
 			if ( function_exists( $conditional ) && call_user_func( $conditional ) && get_option( 'blanked_enable_special_page__' . $conditional ) ) {
 				$blanked_is_apply = true;
 				break;
@@ -152,7 +152,7 @@ function blanked_render_page_title() {
 function blanked_admin_notices() {
 	?>
 	<div class="notice notice-error is-dismissible">
-		<p><?php esc_html_e( 'Blanked Plugin only works for WordPress version 4.7 or later.', 'blanked' ); ?></p>
+		<p><?php esc_html_e( 'Blanked Template plugin only works for WordPress version 4.7 or later.', 'blanked' ); ?></p>
 	</div>
 	<?php
 }
@@ -166,8 +166,8 @@ function blanked_admin_setting() {
 	$settings = new Wpyes(
 		'blanked_setting',
 		array(
-			'menu_title' => __( 'Blanked', 'blanked' ),
-			'page_title' => __( 'Blanked Settings', 'blanked' ),
+			'menu_title' => __( 'Blanked Template', 'blanked' ),
+			'page_title' => __( 'Blanked Template Settings', 'blanked' ),
 			'method'     => 'add_options_page',
 		),
 		'blanked'
@@ -283,7 +283,7 @@ function blanked_admin_setting() {
 		)
 	);
 
-	foreach ( blanked_special_pages_list() as $key => $label ) {
+	foreach ( blanked_conditional_check_list() as $key => $label ) {
 		$settings->add_field(
 			array(
 				'type'  => 'checkbox',
@@ -312,13 +312,15 @@ function blanked_filter_body_class( $classes ) {
 
 	// Remove CSS class.
 	$blanked_remove_body_class = get_option( 'blanked_remove_body_class', '' );
-	if ( $blanked_remove_body_class ) {
+
+	if ( $blanked_remove_body_class && blanked_is_apply_template() ) {
 		$classes = array_diff( $classes, explode( ' ', $blanked_remove_body_class ) );
 	}
 
 	// Add CSS class.
 	$blanked_add_body_class = get_option( 'blanked_add_body_class', '' );
-	if ( $blanked_add_body_class ) {
+
+	if ( $blanked_add_body_class && blanked_is_apply_template() ) {
 		$classes = array_unique( array_merge( $classes, explode( ' ', $blanked_add_body_class ) ) );
 	}
 
@@ -342,14 +344,14 @@ function blanked_filter_post_class( $classes ) {
 	// Remove CSS class.
 	$blanked_remove_post_class = get_option( 'blanked_remove_post_class', '' );
 
-	if ( $blanked_remove_post_class) {
+	if ( $blanked_remove_post_class && blanked_is_apply_template() ) {
 		$classes = array_diff( $classes, explode( ' ', $blanked_remove_post_class ) );
 	}
 
 	// Add CSS class.
 	$blanked_add_post_class = get_option( 'blanked_add_post_class', '' );
 
-	if ( $blanked_add_post_class) {
+	if ( $blanked_add_post_class && blanked_is_apply_template() ) {
 		$classes = array_unique( array_merge( $classes, explode( ' ', $blanked_add_post_class ) ) );
 	}
 

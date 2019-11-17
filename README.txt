@@ -1,4 +1,4 @@
-=== Blanked ===
+=== Blanked Template ===
 Contributors: sofyansitorus
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DGSVXLV7R8BTY
 Tags: blank template, page template
@@ -9,7 +9,7 @@ Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add a blank template for any themes. No header, no sidebar, no footer. Apply blank template to pages, built-in and custom posts, blog, archive, search page.
+Add blank page template for any themes. No header, no sidebar, no footer. Apply blank template to pages, built-in and custom posts types, blog, archive, search page.
 
 == Description ==
 
