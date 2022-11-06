@@ -10,7 +10,7 @@
   "author": "Sofyan Sitorus",
   "devDependencies": {
     "browser-sync": "^2.24.4",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-autoprefixer": "^5.0.0",
     "gulp-bump": "^3.1.1",
     "gulp-clean-css": "^3.9.3",
